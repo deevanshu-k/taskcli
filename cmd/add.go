@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/deevanshu-k/taskcli/libs"
@@ -27,7 +28,7 @@ var addTaskCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := libs.CreateTask(args[0], libs.Pending)
 		if err != nil {
-			println(err)
+			fmt.Println(err)
 			os.Exit(1)
 		}
 	},

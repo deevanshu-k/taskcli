@@ -20,7 +20,7 @@ var statusCommand = &cobra.Command{
 		// Find Stats
 		records, err := libs.AllData()
 		if err != nil {
-			println(err)
+			fmt.Println(err)
 			os.Exit(1)
 		}
 

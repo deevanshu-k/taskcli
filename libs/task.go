@@ -104,3 +104,35 @@ func CreateTask(description string, status StatusEnum) error {
 
 	return nil
 }
+
+func UpdateStatus(id string, status string) error {
+	records, err := AllData()
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < len(records); i++ {
+		if records[i][0] == id {
+			records[i][2] = status
+			err := reFreshData(records)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+
+	return errors.New("task with this id not exist")
+}
+
+func reFreshData(data [][]string) error {
+	file, err := os.OpenFile("data.csv", os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("error while opening the db %w", err)
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	writer.WriteAll(data)
+	return nil
+}

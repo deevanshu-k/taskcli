@@ -33,7 +33,7 @@ var listCommand = &cobra.Command{
 		table := tablewriter.NewWriter(os.Stdout)
 		records, err := libs.AllData()
 		if err != nil {
-			println(err)
+			fmt.Println(err)
 			os.Exit(1)
 		}
 		// Set headers
