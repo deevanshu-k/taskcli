@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/deevanshu-k/taskcli/libs"
+	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -60,11 +61,11 @@ var listCommand = &cobra.Command{
 			if needtoappend {
 				var status string
 				if record[2] == fmt.Sprint(int(libs.Inprogress)) {
-					status = libs.Inprogress.String()
+					status = color.GreenString(libs.Inprogress.String())
 				} else if record[2] == fmt.Sprint(int(libs.Complete)) {
-					status = libs.Complete.String()
+					status = color.YellowString(libs.Complete.String())
 				} else {
-					status = libs.Pending.String()
+					status = color.RedString(libs.Pending.String())
 				}
 				table.Append([]string{record[0], record[1], status, record[3]})
 			}
