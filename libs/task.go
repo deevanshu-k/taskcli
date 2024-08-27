@@ -125,8 +125,48 @@ func UpdateStatus(id string, status string) error {
 	return errors.New("task with this id not exist")
 }
 
+func DeleteAll() error {
+	return reFreshData([][]string{})
+}
+
+func DeleteByIds(ids []string) error {
+	// mapping of ids for fast lookup
+	idsMap := make(map[string]bool)
+	for _, id := range ids {
+		idsMap[id] = true
+	}
+
+	// Get all data
+	records, err := AllData()
+	if err != nil {
+		return err
+	}
+
+	// Filter data
+	var filteredData = [][]string{}
+	var anyChange = false
+	for _, record := range records {
+		if idsMap[record[0]] {
+			anyChange = true
+		} else {
+			filteredData = append(filteredData, record)
+		}
+	}
+
+	if !anyChange {
+		return errors.New("no tasks found")
+	}
+
+	// Save the filtered data
+	if err := reFreshData(filteredData); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func reFreshData(data [][]string) error {
-	file, err := os.OpenFile("data.csv", os.O_WRONLY, 0644)
+	file, err := os.OpenFile("data.csv", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
 		return fmt.Errorf("error while opening the db %w", err)
 	}
