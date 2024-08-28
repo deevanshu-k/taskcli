@@ -125,6 +125,26 @@ func UpdateStatus(id string, status string) error {
 	return errors.New("task with this id not exist")
 }
 
+func UpdateTask(id string, task string) error {
+	records, err := AllData()
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < len(records); i++ {
+		if records[i][0] == id {
+			records[i][1] = task
+			err := reFreshData(records)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+
+	return errors.New("task with this id not exist")
+}
+
 func DeleteAll() error {
 	return reFreshData([][]string{})
 }

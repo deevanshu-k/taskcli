@@ -10,9 +10,11 @@ import (
 )
 
 var updateStatus string = ""
+var updateTask string = ""
 
 func init() {
 	updateCommand.Flags().StringVarP(&updateStatus, "status", "s", "", "For updating the task status, Values are \n '0' for pending,'1' for inprogress,'2' for complete,")
+	updateCommand.Flags().StringVarP(&updateTask, "task", "t", "", "For changing the task")
 	rootCmd.AddCommand(updateCommand)
 }
 
@@ -34,6 +36,13 @@ var updateCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if updateStatus != "" {
 			err := libs.UpdateStatus(args[0], updateStatus)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		}
+		if updateTask != "" {
+			err := libs.UpdateTask(args[0], updateTask)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
