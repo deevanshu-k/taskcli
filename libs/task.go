@@ -78,7 +78,7 @@ func lastId() (int, error) {
 	return tasks[len(tasks)-1].Id, nil
 }
 
-func CreateTask(description string, status StatusEnum) error {
+func CreateTask(tasks []string, status StatusEnum) error {
 	file, err := os.OpenFile("data.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("error while opening the db %w", err)
@@ -93,10 +93,15 @@ func CreateTask(description string, status StatusEnum) error {
 	if err != nil {
 		return fmt.Errorf("error while reading the db  %w", err)
 	}
-	newRecord := []string{fmt.Sprint(id + 1), description, fmt.Sprint(int(status)), t.Format("02-01-2006")}
+	newRecords := [][]string{}
+	for _, task := range tasks {
+		id = id + 1
+		newRecord := []string{fmt.Sprint(id), task, fmt.Sprint(int(status)), t.Format("02-01-2006")}
+		newRecords = append(newRecords, newRecord)
+	}
 
 	// Write the new record to the CSV file
-	err = writer.Write(newRecord)
+	err = writer.WriteAll(newRecords)
 	writer.Flush()
 	if err != nil {
 		return fmt.Errorf("failed to write record to file %w", err)
