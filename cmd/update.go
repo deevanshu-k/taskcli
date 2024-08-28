@@ -19,7 +19,7 @@ func init() {
 }
 
 var updateCommand = &cobra.Command{
-	Use:   "update",
+	Use:   "update taskId [-s status|-t task]",
 	Short: "Update the task detail",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) > 1 {
@@ -50,4 +50,5 @@ var updateCommand = &cobra.Command{
 		}
 		listCommand.Run(listCommand, []string{})
 	},
+	DisableFlagsInUseLine: true,
 }

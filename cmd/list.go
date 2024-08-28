@@ -24,7 +24,7 @@ func init() {
 }
 
 var listCommand = &cobra.Command{
-	Use:     "list",
+	Use:     "list [-p pending|-i inprogress|-c complete|-d date]",
 	Aliases: []string{"ls"},
 	Short:   "Return all the tasks",
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -73,4 +73,5 @@ var listCommand = &cobra.Command{
 		}
 		table.Render()
 	},
+	DisableFlagsInUseLine: true,
 }

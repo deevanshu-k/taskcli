@@ -44,4 +44,5 @@ var statusCommand = &cobra.Command{
 			"   ", "In-Progress: ", color.GreenString(fmt.Sprint(noOfInProgressTask)),
 			"   ", "Complete: ", color.YellowString(fmt.Sprint(noOfCompleteTask)))
 	},
+	DisableFlagsInUseLine: true,
 }

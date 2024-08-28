@@ -16,7 +16,7 @@ func init() {
 }
 
 var deleteCommand = &cobra.Command{
-	Use:   "delete",
+	Use:   "delete taskId",
 	Short: "for removing the tasks permanently",
 	Args: func(cmd *cobra.Command, args []string) error {
 		// If deleteAll flag not provided then we need id of tasks
