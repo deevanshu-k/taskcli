@@ -24,8 +24,9 @@ func init() {
 }
 
 var listCommand = &cobra.Command{
-	Use:   "list",
-	Short: "Return all the tasks",
+	Use:     "list",
+	Aliases: []string{"ls"},
+	Short:   "Return all the tasks",
 	Args: func(cmd *cobra.Command, args []string) error {
 		return nil
 	},
