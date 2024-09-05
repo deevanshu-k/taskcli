@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/deevanshu-k/taskcli/libs"
 	"github.com/spf13/cobra"
@@ -39,8 +40,12 @@ var deleteCommand = &cobra.Command{
 			fmt.Println("All tasks deleted")
 			return
 		}
-
-		err := libs.DeleteByIds(args)
+		var ids []int
+		for _, arg := range args {
+			id, _ := strconv.Atoi(arg)
+			ids = append(ids, id)
+		}
+		err := libs.DeleteByIds(ids)
 		if err != nil {
 			fmt.Println(err)
 			return

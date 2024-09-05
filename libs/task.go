@@ -2,9 +2,7 @@ package libs
 
 import (
 	"bytes"
-	"encoding/csv"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -220,50 +218,46 @@ func DeleteAll() error {
 	return nil
 }
 
-func DeleteByIds(ids []string) error {
-	// mapping of ids for fast lookup
-	idsMap := make(map[string]bool)
-	for _, id := range ids {
-		idsMap[id] = true
+func DeleteByIds(ids []int) error {
+	base_url := os.Getenv("BASE_URL")
+	var reqBody struct {
+		Ids       []int `json:"ids"`
+		DeleteAll bool  `json:"delete_all"`
 	}
-
-	// Get all data
-	records, err := AllData()
+	reqBody.Ids = ids
+	reqBody.DeleteAll = false
+	reqBodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
 		return err
 	}
 
-	// Filter data
-	var filteredData = [][]string{}
-	var anyChange = false
-	for _, record := range records {
-		if idsMap[record[0]] {
-			anyChange = true
-		} else {
-			filteredData = append(filteredData, record)
-		}
+	// Create a new DELETE request
+	req, err := http.NewRequest(http.MethodDelete, base_url+"/deleteTasks", bytes.NewReader(reqBodyBytes))
+	if err != nil {
+		return err
 	}
+	// Set request headers
+	req.Header.Set("Content-Type", "application/json")
 
-	if !anyChange {
-		return errors.New("no tasks found")
+	// Send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
 	}
+	defer resp.Body.Close()
 
-	// Save the filtered data
-	if err := reFreshData(filteredData); err != nil {
+	resBody, err := io.ReadAll(resp.Body)
+	if err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func reFreshData(data [][]string) error {
-	file, err := os.OpenFile("data.csv", os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
-	if err != nil {
-		return fmt.Errorf("error while opening the db %w", err)
+	// Find count
+	var resBodyJson struct {
+		Count int `json:"count"`
 	}
-	defer file.Close()
-
-	writer := csv.NewWriter(file)
-	writer.WriteAll(data)
+	if err := json.Unmarshal(resBody, &resBodyJson); err != nil {
+		return err
+	}
 	return nil
 }
