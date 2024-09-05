@@ -52,6 +52,7 @@ func main() {
 	mux.HandleFunc("/tasks", controller.GetTasks(db))
 	mux.HandleFunc("/createTasks", controller.CreateTasks(db))
 	mux.HandleFunc("/deleteTasks", controller.DeleteTasks(db))
+	mux.HandleFunc("/updateTask", controller.UpdateTask(db))
 
 	// Server Listening
 	fmt.Println(color.YellowString("Listening on port: 5000"))

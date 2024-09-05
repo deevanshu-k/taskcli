@@ -229,4 +229,95 @@ func DeleteTasks(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-// func UpdateTasks() {}
+func UpdateTask(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("content-type", "application/json")
+		// Ensure the request method is DELETE
+		if r.Method != http.MethodPatch {
+			writeError(w, "404 not found!", http.StatusNotFound)
+			return
+		}
+
+		// Read body
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			fmt.Println("Error while reading body: ", err)
+			writeError(w, "Something went wrong!", http.StatusInternalServerError)
+			return
+		}
+		defer r.Body.Close()
+
+		var tasks struct {
+			Id     *int    `json:"id"`
+			Task   *string `json:"task,omitempty"`
+			Status *int    `json:"status,omitempty"`
+		}
+		err = json.Unmarshal(body, &tasks)
+		if err != nil {
+			fmt.Println("Error parsing JSON: ", err)
+			writeError(w, "Something went wrong!", http.StatusInternalServerError)
+			return
+		}
+
+		// Validate data
+		if tasks.Id == nil {
+			fmt.Println("Id is empty!")
+			writeError(w, "Id is required!", http.StatusBadRequest)
+			return
+		}
+		if tasks.Status == nil && tasks.Task == nil {
+			fmt.Println("both status and task is missing!")
+			writeError(w, "Status or task is required!", http.StatusBadRequest)
+			return
+		}
+		if tasks.Status != nil && (*tasks.Status < 0 || *tasks.Status > 2) {
+			fmt.Println("Status value is incorrect!")
+			writeError(w, "Status can only have 0,1,2 as value!", http.StatusBadRequest)
+			return
+		}
+
+		// Prepare Query
+		query := "UPDATE tasks SET"
+		if tasks.Status != nil {
+			query += " status = " + strconv.Itoa(*tasks.Status) + " "
+		}
+		if tasks.Task != nil {
+			if tasks.Status != nil {
+				query += ","
+			}
+			query += " task = '" + *tasks.Task + "' "
+		}
+		query += "WHERE id = " + strconv.Itoa(*tasks.Id)
+		fmt.Println(query)
+		stmt, err := db.Prepare(query)
+		if err != nil {
+			fmt.Println("Error while prepareing query: ", err)
+			writeError(w, "Something went wrong!", http.StatusInternalServerError)
+			return
+		}
+
+		// Execute query
+		result, err := stmt.Exec()
+		if err != nil {
+			fmt.Println("Error while executing query: ", err)
+			writeError(w, "Something went wrong!", http.StatusInternalServerError)
+			return
+		}
+
+		count, err := result.RowsAffected()
+		if err != nil {
+			fmt.Println("Error while getting id: ", err)
+			writeError(w, "Something went wrong!", http.StatusInternalServerError)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(struct {
+			Count int64 `json:"count"`
+		}{Count: count}); err != nil {
+			fmt.Println("Error encoding JSON: ", err)
+			writeError(w, "Something went wrong!", http.StatusInternalServerError)
+			return
+		}
+
+	}
+}
