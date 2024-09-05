@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/deevanshu-k/taskcli/libs"
 	"github.com/spf13/cobra"
@@ -35,7 +36,9 @@ var updateCommand = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if updateStatus != "" {
-			err := libs.UpdateStatus(args[0], updateStatus)
+			id, _ := strconv.Atoi(args[0])
+			status, _ := strconv.Atoi(updateStatus)
+			err := libs.UpdateStatus(id, status)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
