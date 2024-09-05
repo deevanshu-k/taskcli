@@ -130,24 +130,51 @@ func UpdateStatus(id int, status int) error {
 	return nil
 }
 
-func UpdateTask(id string, task string) error {
-	records, err := AllData()
+func UpdateTask(id int, task string) error {
+	base_url := os.Getenv("BASE_URL")
+	var reqBody struct {
+		Id   int    `json:"id"`
+		Task string `json:"task"`
+	}
+	reqBody.Id = id
+	reqBody.Task = task
+	reqBodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
 		return err
 	}
 
-	for i := 0; i < len(records); i++ {
-		if records[i][0] == id {
-			records[i][1] = task
-			err := reFreshData(records)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
+	// Create a new PATCH request
+	req, err := http.NewRequest(http.MethodPatch, base_url+"/updateTask", bytes.NewReader(reqBodyBytes))
+	if err != nil {
+		return err
+	}
+	// Set request headers
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	resBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
 	}
 
-	return errors.New("task with this id not exist")
+	// Find count
+	var resBodyJson struct {
+		Count int `json:"count"`
+	}
+	if err := json.Unmarshal(resBody, &resBodyJson); err != nil {
+		return err
+	}
+	if resBodyJson.Count == 0 {
+		return fmt.Errorf("task with this id not exist")
+	}
+	return nil
 }
 
 func DeleteAll() error {

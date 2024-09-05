@@ -45,7 +45,8 @@ var updateCommand = &cobra.Command{
 			}
 		}
 		if updateTask != "" {
-			err := libs.UpdateTask(args[0], updateTask)
+			id, _ := strconv.Atoi(args[0])
+			err := libs.UpdateTask(id, updateTask)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
