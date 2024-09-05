@@ -2,18 +2,21 @@ package libs
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
 )
 
 type Task struct {
-	Id          int
-	Description string
-	Status      StatusEnum
-	CreatedAt   string
+	Id          int        `json:"id"`
+	Description string     `json:"task"`
+	Status      StatusEnum `json:"status"`
+	CreatedAt   string     `json:"created_at"`
 }
 
 type StatusEnum int
@@ -30,18 +33,37 @@ func (d StatusEnum) String() string {
 }
 
 func AllData() ([][]string, error) {
-	file, err := os.Open("data.csv")
+	base_url := os.Getenv("BASE_URL")
+	resp, err := http.Get(base_url + "/tasks")
 	if err != nil {
-		return nil, errors.New("fail to open db")
+		return nil, err
 	}
-	defer file.Close()
 
-	reader := csv.NewReader(file)
-	records, err := reader.ReadAll()
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.New("fail to ready db")
+		return nil, err
 	}
-	return records, nil
+	defer resp.Body.Close()
+
+	var tasks []Task
+	err = json.Unmarshal(body, &tasks)
+	if err != nil {
+		return nil, err
+	}
+
+	var data [][]string
+	for i := 0; i < len(tasks); i++ {
+		st := "0"
+		if tasks[i].Status == Inprogress {
+			st = "1"
+		}
+		if tasks[i].Status == Complete {
+			st = "2"
+		}
+		data = append(data, []string{strconv.Itoa(tasks[i].Id), tasks[i].Description, st, tasks[i].CreatedAt})
+	}
+
+	return data, nil
 }
 
 func lastId() (int, error) {
