@@ -178,7 +178,46 @@ func UpdateTask(id int, task string) error {
 }
 
 func DeleteAll() error {
-	return reFreshData([][]string{})
+	base_url := os.Getenv("BASE_URL")
+	var reqBody struct {
+		Ids       []int `json:"ids"`
+		DeleteAll bool  `json:"delete_all"`
+	}
+	reqBody.DeleteAll = true
+	reqBodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return err
+	}
+
+	// Create a new DELETE request
+	req, err := http.NewRequest(http.MethodDelete, base_url+"/deleteTasks", bytes.NewReader(reqBodyBytes))
+	if err != nil {
+		return err
+	}
+	// Set request headers
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	resBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	// Find count
+	var resBodyJson struct {
+		Count int `json:"count"`
+	}
+	if err := json.Unmarshal(resBody, &resBodyJson); err != nil {
+		return err
+	}
+	return nil
 }
 
 func DeleteByIds(ids []string) error {
