@@ -74,3 +74,10 @@ func createDefaultStorage(storageFilePath string) {
 		log.Fatalf("Failed to create storage file: %v", err)
 	}
 }
+
+func UpdateConfig(key string, value interface{}) {
+	viper.Set(key, value)
+	if err := viper.WriteConfig(); err != nil {
+		log.Fatalf("Failed to update config file: %v", err)
+	}
+}

@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"net"
+	"taskcli/config"
 	"taskcli/manager"
 	"taskcli/structs"
 )
@@ -38,6 +39,10 @@ func (s *Server) BindAndListen() error {
 		return fmt.Errorf("failed to bind to socket: %w", err)
 	}
 	defer socket.Close()
+
+	addr := socket.Addr().(*net.TCPAddr)
+	config.UpdateConfig("port", addr.Port)
+	config.Config.Port = addr.Port
 
 	for {
 		conn, err := socket.Accept()
