@@ -21,12 +21,12 @@ var addCommand = &cobra.Command{
 		for _, task := range args {
 			command := structs.NewCommand(structs.ADD, nil, &task, nil, nil)
 
-			_, err := command.SendCommand()
+			res, err := command.SendCommand()
 			if err != nil {
 				fmt.Printf("%v\n", err)
 				return
 			}
-
+			fmt.Println(res)
 		}
 	},
 }

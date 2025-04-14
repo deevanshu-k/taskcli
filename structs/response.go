@@ -1,12 +1,16 @@
 package structs
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type Response struct {
 	Type    CommandType `json:"type"`
 	Tasks   []Task      `json:"tasks"`
 	Success bool        `json:"success"`
 	Error   *string     `json:"error"`
+	Message *string     `json:"message"`
 }
 
 func NewResponse(commandTye CommandType, tasks []Task, success bool, error *string) *Response {
@@ -31,4 +35,11 @@ func (r *Response) Unmarshal(data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func (r Response) String() string {
+	if r.Message != nil {
+		return *r.Message
+	}
+	return fmt.Sprintf("Type: %s\nTasks: %v\nSuccess: %t\nError: %v\nMessage: %v\n", r.Type, r.Tasks, r.Success, r.Error, r.Message)
 }

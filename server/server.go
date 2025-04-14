@@ -78,6 +78,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		slog.Info("received", slog.Any("CMD", command))
 
 		var res structs.Response
+		var msg string
 		res.Type = command.Type
 		res.Success = true
 
@@ -89,9 +90,11 @@ func (s *Server) handleConnection(conn net.Conn) {
 				res.Error = &e
 				res.Success = false
 			}
+			msg = fmt.Sprintf("task '%s' added", *command.Task)
 		case structs.LIST:
 			tasks := s.Manager.ListTasks(command.Status)
 			res.Tasks = tasks
+			msg = "task list"
 		case structs.DELETE:
 			if err := s.Manager.DeleteTask(command); err != nil {
 				slog.Error("failed to delete task", slog.String("error", err.Error()))
@@ -99,6 +102,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 				res.Error = &e
 				res.Success = false
 			}
+			msg = "task deleted"
 		case structs.UPDATE:
 			if command.TaskId == nil {
 				slog.Error("task id is nil")
@@ -111,12 +115,15 @@ func (s *Server) handleConnection(conn net.Conn) {
 				res.Error = &e
 				res.Success = false
 			}
+			msg = "task updated"
 		default:
 			slog.Error("unknown command type", slog.String("Type", string(command.Type)))
 			e := "unknown command type"
 			res.Error = &e
 			res.Success = false
 		}
+
+		res.Message = &msg
 
 		b, err := res.Marshal()
 		if err != nil {
