@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"taskcli/cmd"
+)
 
 func main() {
-	fmt.Println("Taskcli appliation")
+	cmd.Execute()
 }
