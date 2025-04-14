@@ -1,0 +1,8 @@
+Package: taskcli
+Version: 1.0.0
+Section: base
+Priority: optional
+Architecture: amd64
+Depends:
+Maintainer: Your Name deevanshukushwah80@gmail.com
+Description: TaskCLI - simple TCP server based task runner
