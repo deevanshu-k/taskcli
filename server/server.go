@@ -45,8 +45,6 @@ func (s *Server) BindAndListen() error {
 			return fmt.Errorf("failed to accept connection: %w", err)
 		}
 
-		slog.Info("client connected", slog.String("remote_addr", conn.RemoteAddr().String()))
-
 		go s.handleConnection(conn)
 	}
 }
@@ -59,7 +57,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 		data, err := reader.ReadString('\n')
 		if err != nil {
 			if err == io.EOF {
-				slog.Info("client disconnected")
 				break
 			}
 			slog.Error("failed to read from connection", slog.String("error", err.Error()))
@@ -75,16 +72,34 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 		slog.Info("received", slog.String("Type", string(command.Type)))
 
+		var res structs.Response
+		res.Type = command.Type
+		res.Success = true
+
 		switch command.Type {
 		case structs.ADD:
 			if err := s.Manager.AddTask(command); err != nil {
 				slog.Error("failed to add task", slog.String("error", err.Error()))
-				conn.Write([]byte("error: " + err.Error() + "\n"))
+				e := string(err.Error())
+				res.Error = &e
+				res.Success = false
 			}
 		default:
 			slog.Error("unknown command type", slog.String("Type", string(command.Type)))
+			e := "unknown command type"
+			res.Error = &e
+			res.Success = false
 			conn.Write([]byte("error\n"))
 		}
-		conn.Write([]byte("ok\n"))
+
+		b, err := res.Marshal()
+		if err != nil {
+			slog.Error("failed to marshal response", slog.String("error", err.Error()))
+			continue
+		}
+
+		b = append(b, byte('\n'))
+
+		conn.Write(b)
 	}
 }

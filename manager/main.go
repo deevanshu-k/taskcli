@@ -10,45 +10,41 @@ import (
 )
 
 type Manager struct {
-	mu    *sync.Mutex
-	tasks map[string]structs.Task
+	mu         *sync.Mutex
+	tasks      map[string]structs.Task
+	storageDir string
 }
 
 func NewManager() *Manager {
 	return &Manager{
-		mu:    &sync.Mutex{},
-		tasks: make(map[string]structs.Task),
+		mu:         &sync.Mutex{},
+		tasks:      make(map[string]structs.Task),
+		storageDir: config.StorageDir + "/taskcli.db",
 	}
 }
 
 func (m *Manager) LoadTasks() error {
-	file, err := os.OpenFile(config.StorageDir+"/tasks.json", os.O_RDWR|os.O_CREATE, 0755)
+	file, err := os.OpenFile(m.storageDir, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to open storage file: %v", err)
 	}
 	defer file.Close()
 
-	reader := bufio.NewReader(file)
-	for {
-		line, isPrefix, err := reader.ReadLine()
-		if err != nil {
-			if err.Error() == "EOF" {
-				break
-			}
-			return fmt.Errorf("failed to read line: %v", err)
-		}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Bytes()
 
 		var task structs.Task
 		if err := task.Unmarshal(line); err != nil {
 			return fmt.Errorf("failed to unmarshal task: %v", err)
 		}
 		m.tasks[task.Id] = task
-		if !isPrefix {
-			break
-		}
 	}
-	return nil
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("scanner error: %v", err)
+	}
 
+	return nil
 }
 
 func (m *Manager) AddTask(cmd structs.Command) error {
@@ -61,7 +57,7 @@ func (m *Manager) AddTask(cmd structs.Command) error {
 
 	task := structs.NewTask(*cmd.Task, structs.PENDING)
 
-	file, err := os.OpenFile(config.StorageDir+"/tasks.json", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(m.storageDir, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open storage file: %v", err)
 	}
@@ -72,6 +68,7 @@ func (m *Manager) AddTask(cmd structs.Command) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal task: %v", err)
 	}
+	b = append(b, byte('\n'))
 	if _, err := writer.Write(b); err != nil {
 		return fmt.Errorf("failed to write task to file: %v", err)
 	}
