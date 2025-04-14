@@ -70,7 +70,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			continue
 		}
 
-		slog.Info("received", slog.String("Type", string(command.Type)))
+		slog.Info("received", slog.Any("CMD", command))
 
 		var res structs.Response
 		res.Type = command.Type
@@ -88,13 +88,20 @@ func (s *Server) handleConnection(conn net.Conn) {
 			tasks := s.Manager.ListTasks(command.Status)
 			res.Tasks = tasks
 		case structs.DELETE:
+			if err := s.Manager.DeleteTask(command); err != nil {
+				slog.Error("failed to delete task", slog.String("error", err.Error()))
+				e := string(err.Error())
+				res.Error = &e
+				res.Success = false
+			}
+		case structs.UPDATE:
 			if command.TaskId == nil {
 				slog.Error("task id is nil")
 				e := "task id is nil"
 				res.Error = &e
 				res.Success = false
-			} else if err := s.Manager.DeleteTask(command); err != nil {
-				slog.Error("failed to delete task", slog.String("error", err.Error()))
+			} else if err := s.Manager.UpdateTask(command); err != nil {
+				slog.Error("failed to update task", slog.String("error", err.Error()))
 				e := string(err.Error())
 				res.Error = &e
 				res.Success = false

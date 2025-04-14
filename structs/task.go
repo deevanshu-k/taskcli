@@ -19,7 +19,7 @@ func (s Status) String() string {
 	case PENDING:
 		return "Pending"
 	case INPROGRESS:
-		return "In Progress"
+		return "In-Progress"
 	case COMPLETED:
 		return "Completed"
 	default:

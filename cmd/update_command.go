@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
+	"taskcli/structs"
 
 	"github.com/spf13/cobra"
 )
@@ -24,11 +26,49 @@ var updateCommand = &cobra.Command{
 		status, _ := cmd.Flags().GetString("status")
 
 		// Retrieving the id argument
-		id := args[0]
+		if len(args) == 0 {
+			cmd.Help()
+			return
+		}
+		taskId, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Invalid task ID")
+			return
+		}
 
-		// Output the task info (this is just for demonstration)
-		fmt.Printf("Task ID: %s\n", id)
-		fmt.Printf("Description: %s\n", description)
-		fmt.Printf("Status: %s\n", status)
+		if description == "" && (len(status) == 0 || len(status) > 1 || status[0] != 'P' && status[0] != 'I' && status[0] != 'C') {
+			cmd.Help()
+			return
+		}
+
+		var rstatus *structs.Status = nil
+
+		if len(status) == 1 && rune(status[0]) == rune(structs.PENDING) {
+			temp := structs.PENDING
+			rstatus = &temp
+		}
+		if len(status) == 1 && rune(status[0]) == rune(structs.INPROGRESS) {
+			temp := structs.INPROGRESS
+			rstatus = &temp
+		}
+		if len(status) == 1 && rune(status[0]) == rune(structs.COMPLETED) {
+			temp := structs.COMPLETED
+			rstatus = &temp
+		}
+
+		var pdescription *string = nil
+		if description != "" {
+			pdescription = &description
+		}
+
+		command := structs.NewCommand(structs.UPDATE, &taskId, pdescription, rstatus, nil)
+
+		res, err := command.SendCommand()
+		if err != nil {
+			fmt.Printf("%v\n", err)
+			return
+		}
+
+		fmt.Println(res)
 	},
 }

@@ -26,17 +26,17 @@ var deleteCommand = &cobra.Command{
 			return
 		}
 
-		var taskId int
+		var taskId *int
 		if !all && len(args) > 0 {
 			id, err := strconv.Atoi(args[0])
 			if err != nil {
 				log.Fatalln("Invalid task ID")
 
 			}
-			taskId = id
+			taskId = &id
 		}
 
-		command := structs.NewCommand(structs.DELETE, &taskId, nil, nil, &all)
+		command := structs.NewCommand(structs.DELETE, taskId, nil, nil, &all)
 
 		res, err := command.SendCommand()
 		if err != nil {

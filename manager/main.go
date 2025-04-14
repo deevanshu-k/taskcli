@@ -128,3 +128,46 @@ func (m *Manager) DeleteTask(cmd structs.Command) error {
 
 	return nil
 }
+
+func (m *Manager) UpdateTask(cmd structs.Command) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if cmd.TaskId == nil {
+		return fmt.Errorf("task ID is nil")
+	}
+
+	task, ok := m.tasks[*cmd.TaskId]
+	if !ok {
+		return fmt.Errorf("task with ID %d not found", *cmd.TaskId)
+	}
+
+	if cmd.Task != nil {
+		task.Name = *cmd.Task
+	}
+	if cmd.Status != nil {
+		task.Status = *cmd.Status
+	}
+	m.tasks[*cmd.TaskId] = task
+
+	file, err := os.OpenFile(m.storageDir, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to open storage file: %v", err)
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	for _, task := range m.tasks {
+		b, err := task.Marshal()
+		if err != nil {
+			return fmt.Errorf("failed to marshal task: %v", err)
+		}
+		b = append(b, byte('\n'))
+		if _, err := writer.Write(b); err != nil {
+			return fmt.Errorf("failed to write task to file: %v", err)
+		}
+	}
+	writer.Flush()
+
+	return nil
+}
