@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Status rune
@@ -16,15 +14,27 @@ const (
 	COMPLETED  Status = 'C'
 )
 
+func (s Status) String() string {
+	switch s {
+	case PENDING:
+		return "Pending"
+	case INPROGRESS:
+		return "In Progress"
+	case COMPLETED:
+		return "Completed"
+	default:
+		return "Unknown"
+	}
+}
+
 type Task struct {
-	Id     string `json:"id"`
+	Id     int    `json:"id"`
 	Name   string `json:"task"`
 	Status Status `json:"status"`
 	Date   string `json:"date"`
 }
 
-func NewTask(name string, status Status) *Task {
-	id := uuid.NewString()
+func NewTask(id int, name string, status Status) *Task {
 	data := time.Now().Format("2006-01-02 15:04:05")
 	return &Task{
 		Id:     id,

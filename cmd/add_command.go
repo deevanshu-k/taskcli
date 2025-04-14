@@ -21,7 +21,8 @@ var addCommand = &cobra.Command{
 		for _, task := range args {
 			command := structs.NewCommand(structs.ADD, nil, &task, nil, nil)
 
-			if err := command.SendCommand(); err != nil {
+			_, err := command.SendCommand()
+			if err != nil {
 				fmt.Printf("%v", err)
 				return
 			}

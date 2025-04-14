@@ -11,14 +11,14 @@ import (
 
 type Manager struct {
 	mu         *sync.Mutex
-	tasks      map[string]structs.Task
+	tasks      map[int]structs.Task
 	storageDir string
 }
 
 func NewManager() *Manager {
 	return &Manager{
 		mu:         &sync.Mutex{},
-		tasks:      make(map[string]structs.Task),
+		tasks:      make(map[int]structs.Task),
 		storageDir: config.StorageDir + "/taskcli.db",
 	}
 }
@@ -55,7 +55,14 @@ func (m *Manager) AddTask(cmd structs.Command) error {
 		return fmt.Errorf("task is nil")
 	}
 
-	task := structs.NewTask(*cmd.Task, structs.PENDING)
+	id := 0
+	for _, task := range m.tasks {
+		if task.Id > id {
+			id = task.Id
+		}
+	}
+	id++
+	task := structs.NewTask(id, *cmd.Task, structs.PENDING)
 
 	file, err := os.OpenFile(m.storageDir, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -77,4 +84,13 @@ func (m *Manager) AddTask(cmd structs.Command) error {
 	m.tasks[task.Id] = *task
 
 	return nil
+}
+
+func (m *Manager) ListTasks(status *structs.Status) (tasks []structs.Task) {
+	for _, task := range m.tasks {
+		if status == nil || task.Status == *status {
+			tasks = append(tasks, task)
+		}
+	}
+	return
 }

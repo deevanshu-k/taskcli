@@ -84,12 +84,14 @@ func (s *Server) handleConnection(conn net.Conn) {
 				res.Error = &e
 				res.Success = false
 			}
+		case structs.LIST:
+			tasks := s.Manager.ListTasks(command.Status)
+			res.Tasks = tasks
 		default:
 			slog.Error("unknown command type", slog.String("Type", string(command.Type)))
 			e := "unknown command type"
 			res.Error = &e
 			res.Success = false
-			conn.Write([]byte("error\n"))
 		}
 
 		b, err := res.Marshal()

@@ -2,7 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"sort"
+	"strconv"
+	"taskcli/structs"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -19,12 +24,44 @@ var listCommand = &cobra.Command{
 	Aliases: []string{"ls"},
 	Run: func(cmd *cobra.Command, args []string) {
 		filter, _ := cmd.Flags().GetString("filter")
-		if filter != "" {
-			// Implement filtering logic here
-			fmt.Println("List filtered tasks with status:", filter)
-		} else {
-			// List all tasks
-			fmt.Println("List all tasks.")
+		var r *structs.Status = nil
+
+		if len(filter) > 0 && rune(filter[0]) == rune(structs.PENDING) {
+			temp := structs.PENDING
+			r = &temp
 		}
+		if len(filter) > 0 && rune(filter[0]) == rune(structs.INPROGRESS) {
+			temp := structs.INPROGRESS
+			r = &temp
+		}
+		if len(filter) > 0 && rune(filter[0]) == rune(structs.COMPLETED) {
+			temp := structs.COMPLETED
+			r = &temp
+		}
+
+		command := structs.NewCommand(structs.LIST, nil, nil, r, nil)
+
+		res, err := command.SendCommand()
+		if err != nil {
+			fmt.Printf("%v", err)
+			return
+		}
+
+		sort.Slice(res.Tasks, func(i, j int) bool {
+			return res.Tasks[i].Id < res.Tasks[j].Id
+		})
+
+		printTasks(res.Tasks)
 	},
+}
+
+func printTasks(tasks []structs.Task) {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"ID", "Title", "Status"})
+
+	for _, t := range tasks {
+		table.Append([]string{strconv.Itoa(t.Id), t.Name, t.Status.String(), t.Date})
+	}
+
+	table.Render() // Print it!
 }
