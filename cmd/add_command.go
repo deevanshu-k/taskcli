@@ -23,7 +23,7 @@ var addCommand = &cobra.Command{
 
 			_, err := command.SendCommand()
 			if err != nil {
-				fmt.Printf("%v", err)
+				fmt.Printf("%v\n", err)
 				return
 			}
 

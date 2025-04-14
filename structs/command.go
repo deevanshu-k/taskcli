@@ -21,13 +21,13 @@ const (
 
 type Command struct {
 	Type      CommandType `json:"type"`
-	TaskId    *string     `json:"task_id"`
+	TaskId    *int        `json:"task_id"`
 	Task      *string     `json:"task"`
 	Status    *Status     `json:"status"`
 	DeleteAll *bool       `json:"delete_all"`
 }
 
-func NewCommand(commandType CommandType, taskId *string, task *string, status *Status, deleteAll *bool) *Command {
+func NewCommand(commandType CommandType, taskId *int, task *string, status *Status, deleteAll *bool) *Command {
 	return &Command{
 		Type:      commandType,
 		TaskId:    taskId,

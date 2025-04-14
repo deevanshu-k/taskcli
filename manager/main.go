@@ -94,3 +94,37 @@ func (m *Manager) ListTasks(status *structs.Status) (tasks []structs.Task) {
 	}
 	return
 }
+
+func (m *Manager) DeleteTask(cmd structs.Command) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if cmd.DeleteAll != nil && *cmd.DeleteAll {
+		for id := range m.tasks {
+			delete(m.tasks, id)
+		}
+	} else if cmd.TaskId != nil {
+		delete(m.tasks, *cmd.TaskId)
+	}
+
+	file, err := os.OpenFile(m.storageDir, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to open storage file: %v", err)
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	for _, task := range m.tasks {
+		b, err := task.Marshal()
+		if err != nil {
+			return fmt.Errorf("failed to marshal task: %v", err)
+		}
+		b = append(b, byte('\n'))
+		if _, err := writer.Write(b); err != nil {
+			return fmt.Errorf("failed to write task to file: %v", err)
+		}
+	}
+	writer.Flush()
+
+	return nil
+}

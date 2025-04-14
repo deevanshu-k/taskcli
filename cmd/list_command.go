@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	listCommand.Flags().StringP("filter", "f", "", "Filter tasks by status")
+	listCommand.Flags().StringP("filter", "f", "", "Filter tasks by status P/I/C")
 
 	rootCommand.AddCommand(listCommand)
 }
@@ -43,7 +43,7 @@ var listCommand = &cobra.Command{
 
 		res, err := command.SendCommand()
 		if err != nil {
-			fmt.Printf("%v", err)
+			fmt.Printf("%v\n", err)
 			return
 		}
 
