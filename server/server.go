@@ -6,18 +6,23 @@ import (
 	"io"
 	"log/slog"
 	"net"
-	"strings"
+	"taskcli/manager"
+	"taskcli/structs"
 )
 
 type Server struct {
-	Host string
-	Port int
+	Host    string
+	Port    int
+	Manager manager.Manager
 }
 
 func NewServer(host string, port int) *Server {
+	mg := manager.NewManager()
+	mg.LoadTasks()
 	return &Server{
-		Host: host,
-		Port: port,
+		Host:    host,
+		Port:    port,
+		Manager: *mg,
 	}
 }
 
@@ -61,10 +66,25 @@ func (s *Server) handleConnection(conn net.Conn) {
 			break
 		}
 
-		data = strings.Trim(data, "\n")
-		data = strings.TrimSpace(data)
+		var command structs.Command
+		if err := command.Unmarshal([]byte(data)); err != nil {
+			slog.Error("failed to unmarshal command", slog.String("error", err.Error()))
+			conn.Write([]byte("error\n"))
+			continue
+		}
 
-		slog.Info("received", slog.String("data", data))
+		slog.Info("received", slog.String("Type", string(command.Type)))
+
+		switch command.Type {
+		case structs.ADD:
+			if err := s.Manager.AddTask(command); err != nil {
+				slog.Error("failed to add task", slog.String("error", err.Error()))
+				conn.Write([]byte("error: " + err.Error() + "\n"))
+			}
+		default:
+			slog.Error("unknown command type", slog.String("Type", string(command.Type)))
+			conn.Write([]byte("error\n"))
+		}
 		conn.Write([]byte("ok\n"))
 	}
 }
