@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"taskcli/config"
 
 	"github.com/spf13/cobra"
@@ -19,6 +20,6 @@ var rootCommand = &cobra.Command{
 
 func Execute() {
 	if err := rootCommand.Execute(); err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 }
