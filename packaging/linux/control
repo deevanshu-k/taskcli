@@ -4,5 +4,5 @@ Section: base
 Priority: optional
 Architecture: amd64
 Depends:
-Maintainer: Your Name deevanshukushwah80@gmail.com
+Maintainer: Deevanshu Kushwah <deevanshukushwah80@gmail.com>
 Description: TaskCLI - simple TCP server based task runner
