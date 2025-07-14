@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log/slog"
 	"taskcli/config"
 )
@@ -14,7 +15,17 @@ func printConfiguration() {
 func Start() {
 	printConfiguration()
 
+	// CREATE TCP SERVER
 	server := NewServer(config.Config.Host, config.Config.Port)
+
+	// START NOTIFICATION ROUTINE
+	go func() {
+		for tasks := range server.Manager.GetUpdatedTasks() {
+			fmt.Println(tasks)
+		}
+	}()
+
+	// START TCP SERVER
 	slog.Info("server started", slog.String("Host", config.Config.Host), slog.Int("Port", config.Config.Port))
 	server.Start()
 }

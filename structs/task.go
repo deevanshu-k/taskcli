@@ -27,20 +27,27 @@ func (s Status) String() string {
 	}
 }
 
-type Task struct {
-	Id     int    `json:"id"`
-	Name   string `json:"task"`
-	Status Status `json:"status"`
-	Date   string `json:"date"`
+type NotificationTime struct {
+	Hour   int8 `json:"hour"`
+	Minute int8 `json:"minute"`
 }
 
-func NewTask(id int, name string, status Status) *Task {
+type Task struct {
+	Id               int              `json:"id"`
+	Name             string           `json:"task"`
+	Status           Status           `json:"status"`
+	Date             string           `json:"date"`
+	NotificationTime NotificationTime `json:"notification_time"`
+}
+
+func NewTask(id int, name string, status Status, notificationTime NotificationTime) *Task {
 	data := time.Now().Format("2006-01-02 15:04:05")
 	return &Task{
-		Id:     id,
-		Name:   name,
-		Status: status,
-		Date:   data,
+		Id:               id,
+		Name:             name,
+		Status:           status,
+		Date:             data,
+		NotificationTime: notificationTime,
 	}
 }
 
