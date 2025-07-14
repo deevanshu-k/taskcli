@@ -11,8 +11,9 @@ import (
 var Config *TaskCliConfig
 
 type TaskCliConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
+	Host                  string `mapstructure:"host"`
+	Port                  int    `mapstructure:"port"`
+	NotificationFrequency int    `mapstructure:"notification_frequency"`
 }
 
 func Load() {
@@ -53,12 +54,14 @@ func createDefaultConfig(configFilePath string) {
 
 	// Create the default config file
 	defaultConfig := TaskCliConfig{
-		Host: "127.0.0.1",
-		Port: 0,
+		Host:                  "127.0.0.1",
+		Port:                  0,
+		NotificationFrequency: 30,
 	}
 
 	viper.SetDefault("host", defaultConfig.Host)
 	viper.SetDefault("port", defaultConfig.Port)
+	viper.SetDefault("notification_frequency", defaultConfig.NotificationFrequency)
 
 	if err := viper.WriteConfigAs(configFilePath); err != nil {
 		log.Fatalf("Failed to create default config file: %v", err)
@@ -75,7 +78,7 @@ func createDefaultStorage(storageFilePath string) {
 	}
 }
 
-func UpdateConfig(key string, value interface{}) {
+func UpdateConfig(key string, value any) {
 	viper.Set(key, value)
 	if err := viper.WriteConfig(); err != nil {
 		log.Fatalf("Failed to update config file: %v", err)

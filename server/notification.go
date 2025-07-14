@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os/exec"
 	"runtime"
+	"taskcli/config"
 	"taskcli/structs"
 	"time"
 )
@@ -27,7 +28,7 @@ func (nm *NotificationManager) Start(updatedTasks <-chan []structs.Task) {
 
 	// NOTIFICATION ROUTINE
 	go func() {
-		for now := range time.Tick(time.Second * 30) {
+		for now := range time.Tick(time.Second * time.Duration(config.Config.NotificationFrequency)) {
 			for _, task := range nm.tasks {
 				if task.NotificationTime.IsBefore(int8(now.Hour()), int8(now.Minute())) && task.Notify == structs.ON {
 					if err := nm.sendNotification(task); err != nil {

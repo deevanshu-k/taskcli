@@ -47,7 +47,7 @@
 
 - Systemd starts the taskcli server in background
 - `taskcli` can then send all its commands to the server
-- Both use the same config file to get the host and server
+- Both use the same config file to get the port, host and notification_frequency
 
 ## TODO
 
