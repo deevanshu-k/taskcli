@@ -12,8 +12,8 @@ import (
 func init() {
 	updateCommand.Flags().StringP("description", "d", "", "Description of the task")
 	updateCommand.Flags().StringP("status", "s", "", "Status of the task (P/I/C)")
-	updateCommand.Flags().StringP("notification", "n", "", "Notification time in HH:MM format")
-	updateCommand.Flags().StringP("notify", "f", "", "Task notification (on/off)")
+	updateCommand.Flags().StringP("time", "t", "", "Notification time in HH:MM format")
+	updateCommand.Flags().StringP("notify", "n", "", "Task notification (on/off)")
 
 	rootCommand.AddCommand(updateCommand)
 }
@@ -21,7 +21,7 @@ func init() {
 var updateCommand = &cobra.Command{
 	Use:     "update",
 	Short:   "Update existing tasks",
-	Example: "taskcli update <taskid> \n -d 'New task desc' \n -s 'P/I/C' for updating status P=Pending I=InProgress C=Completed \n -n for setting notification time (HH:MM) \n -f for enabling/disabling notifications (on/off)",
+	Example: "taskcli update <taskid> \n -d 'New task desc' \n -s 'P/I/C' for updating status P=Pending I=InProgress C=Completed \n -t for setting notification time (HH:MM) \n -n for enabling/disabling notifications (on/off)",
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Retrieving flags
@@ -30,7 +30,7 @@ var updateCommand = &cobra.Command{
 		notify, _ := cmd.Flags().GetString("notify")
 		var hour int8 = -1
 		var minute int8 = -1
-		if notificationTime, _ := cmd.Flags().GetString("notification"); notificationTime != "" {
+		if notificationTime, _ := cmd.Flags().GetString("time"); notificationTime != "" {
 			if len(notificationTime) != 5 || notificationTime[2] != ':' {
 				fmt.Println("Invalid notification time format")
 				return
@@ -55,7 +55,7 @@ var updateCommand = &cobra.Command{
 			return
 		}
 
-		if description == "" && (len(status) == 0 || len(status) > 1 || status[0] != 'P' && status[0] != 'I' && status[0] != 'C') && (hour <= 0 || minute <= -1) && (notify != "on" && notify != "off") {
+		if description == "" && (len(status) == 0 || len(status) > 1 || status[0] != 'P' && status[0] != 'I' && status[0] != 'C') && (hour <= -1 || minute <= -1) && (notify != "on" && notify != "off") {
 			cmd.Help()
 			return
 		}
@@ -81,7 +81,7 @@ var updateCommand = &cobra.Command{
 		}
 
 		var notificationTime *structs.NotificationTime = nil
-		if hour > 0 && minute >= 0 {
+		if hour >= 0 && minute >= 0 {
 			notificationTime = &structs.NotificationTime{Hour: hour, Minute: minute}
 			notify = "on"
 		}
