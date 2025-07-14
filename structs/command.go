@@ -20,20 +20,24 @@ const (
 )
 
 type Command struct {
-	Type      CommandType `json:"type"`
-	TaskId    *int        `json:"task_id"`
-	Task      *string     `json:"task"`
-	Status    *Status     `json:"status"`
-	DeleteAll *bool       `json:"delete_all"`
+	Type             CommandType       `json:"type"`
+	TaskId           *int              `json:"task_id"`
+	Task             *string           `json:"task"`
+	Status           *Status           `json:"status"`
+	DeleteAll        *bool             `json:"delete_all"`
+	NotificationTime *NotificationTime `json:"notification_time"`
+	Notify           *Notify           `json:"notify"`
 }
 
-func NewCommand(commandType CommandType, taskId *int, task *string, status *Status, deleteAll *bool) *Command {
+func NewCommand(commandType CommandType, taskId *int, task *string, status *Status, deleteAll *bool, notificationTime *NotificationTime, notify *Notify) *Command {
 	return &Command{
-		Type:      commandType,
-		TaskId:    taskId,
-		Task:      task,
-		Status:    status,
-		DeleteAll: deleteAll,
+		Type:             commandType,
+		TaskId:           taskId,
+		Task:             task,
+		Status:           status,
+		DeleteAll:        deleteAll,
+		NotificationTime: notificationTime,
+		Notify:           notify,
 	}
 }
 

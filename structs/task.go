@@ -27,9 +27,35 @@ func (s Status) String() string {
 	}
 }
 
+type Notify string
+
+const (
+	ON  Notify = "on"
+	OFF Notify = "off"
+)
+
+func (n Notify) String() string {
+	switch n {
+	case ON:
+		return "On"
+	case OFF:
+		return "Off"
+	default:
+		return "-"
+	}
+}
+
 type NotificationTime struct {
 	Hour   int8 `json:"hour"`
 	Minute int8 `json:"minute"`
+}
+
+func (nt NotificationTime) IsBefore(hour int8, minute int8) bool {
+	return nt.Hour < hour || (nt.Hour == hour && nt.Minute < minute)
+}
+
+func (nt NotificationTime) String() string {
+	return fmt.Sprintf("%02d:%02d", nt.Hour, nt.Minute)
 }
 
 type Task struct {
@@ -38,6 +64,7 @@ type Task struct {
 	Status           Status           `json:"status"`
 	Date             string           `json:"date"`
 	NotificationTime NotificationTime `json:"notification_time"`
+	Notify           Notify           `json:"notify"`
 }
 
 func NewTask(id int, name string, status Status, notificationTime NotificationTime) *Task {
@@ -48,6 +75,7 @@ func NewTask(id int, name string, status Status, notificationTime NotificationTi
 		Status:           status,
 		Date:             data,
 		NotificationTime: notificationTime,
+		Notify:           OFF,
 	}
 }
 

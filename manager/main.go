@@ -68,8 +68,8 @@ func (m *Manager) AddTask(cmd structs.Command) error {
 	}
 	id++
 	task := structs.NewTask(id, *cmd.Task, structs.PENDING, structs.NotificationTime{
-		Hour:   8,
-		Minute: 5,
+		Hour:   0,
+		Minute: 0,
 	})
 
 	file, err := os.OpenFile(m.storageDir, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -160,6 +160,13 @@ func (m *Manager) UpdateTask(cmd structs.Command) error {
 	if cmd.Status != nil {
 		task.Status = *cmd.Status
 	}
+	if cmd.NotificationTime != nil {
+		task.NotificationTime = *cmd.NotificationTime
+	}
+	if cmd.Notify != nil {
+		task.Notify = *cmd.Notify
+	}
+
 	m.tasks[*cmd.TaskId] = task
 
 	file, err := os.OpenFile(m.storageDir, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)

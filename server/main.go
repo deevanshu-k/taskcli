@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"log/slog"
 	"taskcli/config"
 )
@@ -19,11 +18,8 @@ func Start() {
 	server := NewServer(config.Config.Host, config.Config.Port)
 
 	// START NOTIFICATION ROUTINE
-	go func() {
-		for tasks := range server.Manager.GetUpdatedTasks() {
-			fmt.Println(tasks)
-		}
-	}()
+	notificationManager := NewNotificationManager()
+	notificationManager.Start(server.Manager.GetUpdatedTasks())
 
 	// START TCP SERVER
 	slog.Info("server started", slog.String("Host", config.Config.Host), slog.Int("Port", config.Config.Port))

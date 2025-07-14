@@ -39,7 +39,7 @@ var listCommand = &cobra.Command{
 			r = &temp
 		}
 
-		command := structs.NewCommand(structs.LIST, nil, nil, r, nil)
+		command := structs.NewCommand(structs.LIST, nil, nil, r, nil, nil, nil)
 
 		res, err := command.SendCommand()
 		if err != nil {
@@ -57,10 +57,10 @@ var listCommand = &cobra.Command{
 
 func printTasks(tasks []structs.Task) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Title", "Status"})
+	table.SetHeader([]string{"ID", "Title", "Status", "Notification Time", "Notify"})
 
 	for _, t := range tasks {
-		table.Append([]string{strconv.Itoa(t.Id), t.Name, t.Status.String(), t.Date})
+		table.Append([]string{strconv.Itoa(t.Id), t.Name, t.Status.String(), t.NotificationTime.String(), t.Notify.String(), t.Date})
 	}
 
 	table.Render() // Print it!
