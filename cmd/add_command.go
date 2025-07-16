@@ -19,7 +19,7 @@ var addCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		for _, task := range args {
-			command := structs.NewCommand(structs.ADD, nil, &task, nil, nil)
+			command := structs.NewCommand(structs.ADD, nil, &task, nil, nil, nil, nil)
 
 			res, err := command.SendCommand()
 			if err != nil {

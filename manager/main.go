@@ -10,16 +10,19 @@ import (
 )
 
 type Manager struct {
-	mu         *sync.Mutex
-	tasks      map[int]structs.Task
-	storageDir string
+	mu               *sync.Mutex
+	tasks            map[int]structs.Task
+	updatedTasksChan chan []structs.Task
+	storageDir       string
 }
 
 func NewManager() *Manager {
+	// updatedTasksChan is a buffered channel to avoid blocking when sending updates
 	return &Manager{
-		mu:         &sync.Mutex{},
-		tasks:      make(map[int]structs.Task),
-		storageDir: config.StorageDir + "/taskcli.db",
+		mu:               &sync.Mutex{},
+		tasks:            make(map[int]structs.Task),
+		updatedTasksChan: make(chan []structs.Task, 1),
+		storageDir:       config.StorageDir + "/taskcli.db",
 	}
 }
 
@@ -44,6 +47,8 @@ func (m *Manager) LoadTasks() error {
 		return fmt.Errorf("scanner error: %v", err)
 	}
 
+	m.taskUpdated()
+
 	return nil
 }
 
@@ -62,7 +67,10 @@ func (m *Manager) AddTask(cmd structs.Command) error {
 		}
 	}
 	id++
-	task := structs.NewTask(id, *cmd.Task, structs.PENDING)
+	task := structs.NewTask(id, *cmd.Task, structs.PENDING, structs.NotificationTime{
+		Hour:   0,
+		Minute: 0,
+	})
 
 	file, err := os.OpenFile(m.storageDir, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -79,9 +87,11 @@ func (m *Manager) AddTask(cmd structs.Command) error {
 	if _, err := writer.Write(b); err != nil {
 		return fmt.Errorf("failed to write task to file: %v", err)
 	}
+
 	writer.Flush()
 
 	m.tasks[task.Id] = *task
+	m.taskUpdated()
 
 	return nil
 }
@@ -124,7 +134,9 @@ func (m *Manager) DeleteTask(cmd structs.Command) error {
 			return fmt.Errorf("failed to write task to file: %v", err)
 		}
 	}
+
 	writer.Flush()
+	m.taskUpdated()
 
 	return nil
 }
@@ -148,6 +160,13 @@ func (m *Manager) UpdateTask(cmd structs.Command) error {
 	if cmd.Status != nil {
 		task.Status = *cmd.Status
 	}
+	if cmd.NotificationTime != nil {
+		task.NotificationTime = *cmd.NotificationTime
+	}
+	if cmd.Notify != nil {
+		task.Notify = *cmd.Notify
+	}
+
 	m.tasks[*cmd.TaskId] = task
 
 	file, err := os.OpenFile(m.storageDir, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
@@ -167,7 +186,21 @@ func (m *Manager) UpdateTask(cmd structs.Command) error {
 			return fmt.Errorf("failed to write task to file: %v", err)
 		}
 	}
+
 	writer.Flush()
+	m.taskUpdated()
 
 	return nil
+}
+
+func (m *Manager) taskUpdated() {
+	tasks := []structs.Task{}
+	for _, task := range m.tasks {
+		tasks = append(tasks, task)
+	}
+	m.updatedTasksChan <- tasks
+}
+
+func (m *Manager) GetUpdatedTasks() <-chan []structs.Task {
+	return m.updatedTasksChan
 }

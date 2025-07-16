@@ -36,7 +36,7 @@ var deleteCommand = &cobra.Command{
 			taskId = &id
 		}
 
-		command := structs.NewCommand(structs.DELETE, taskId, nil, nil, &all)
+		command := structs.NewCommand(structs.DELETE, taskId, nil, nil, &all, nil, nil)
 
 		res, err := command.SendCommand()
 		if err != nil {

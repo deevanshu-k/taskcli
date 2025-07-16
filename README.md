@@ -28,7 +28,9 @@
    ```bash
    sudo dpkg -i taskcli_<VERSION>_amd64.deb
    ```
-5. Update user in `/etc/systemd/system/taskcli.service`: root -> current_user
+5. Update user in `/etc/systemd/system/taskcli.service`:
+    - $USER -> current_user and $USER-ID -> current-user-id
+    - Replace $USER with current_user and $USER-ID with current-user-id
 6. Reload systemd daemon:
    ```bash
    sudo systemctl daemon-reload
@@ -47,7 +49,7 @@
 
 - Systemd starts the taskcli server in background
 - `taskcli` can then send all its commands to the server
-- Both use the same config file to get the host and server
+- Both use the same config file to get the port, host and notification_frequency
 
 ## TODO
 
